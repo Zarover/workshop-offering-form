@@ -2,6 +2,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Offer a Workshop, Egypt Retreat 2026 | Sangat of the Divine Light</title>
+<meta name="description" content="Are you part of the Egyptian Sangat? Share your gift and offer a workshop or session at the Egypt Retreat 2026 — The Breath of Hope & Remembrance, Ain Sokhna, September 4–7.">
+<!-- Open Graph — helps Facebook / Messenger trust and preview this link -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Offer a Workshop — Egypt Retreat 2026 | Sangat of the Divine Light">
+<meta property="og:description" content="Share your gift with the community. Submit a workshop or session proposal for the Egypt Retreat 2026 — The Breath of Hope & Remembrance, Ain Sokhna, September 4–7.">
+<meta property="og:image" content="https://sodleqypt2026.netlify.app/og-preview.jpg">
+<meta property="og:url" content="https://sodleqypt2026.netlify.app/workshop">
+<meta property="og:site_name" content="Sangat of the Divine Light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Jost:wght@300;400;500;600&amp;family=Amiri:ital,wght@0,400;0,700;1,400&amp;family=Tajawal:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
@@ -609,21 +617,36 @@
       const payload = {};
       formData.forEach((value, key) => { payload[key] = value; });
 
+      let done = false;
+
+      function showConfirmation(){
+        if(done) return;
+        done = true;
+        clearTimeout(timeoutHandle);
+        form.style.display = 'none';
+        confirmBox.classList.add('show');
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+
+      function nativeFallback(){
+        if(done) return;
+        done = true;
+        clearTimeout(timeoutHandle);
+        const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+        form.action = window.location.pathname + '?submitted=true&lang=' + lang;
+        form.submit();
+      }
+
+      // If fetch hasn't resolved in 3.5 s, fall back to native POST
+      const timeoutHandle = setTimeout(nativeFallback, 3500);
+
       fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: encode(payload)
       })
-      .then(() => {
-        form.style.display = 'none';
-        confirmBox.classList.add('show');
-      })
-      .catch((error) => {
-        btn.disabled = false;
-        btn.textContent = opts.submitLabel;
-        alert(opts.errorAlert);
-        console.error(error);
-      });
+      .then(showConfirmation)
+      .catch(nativeFallback);
     });
   }
 
@@ -725,6 +748,23 @@
       }catch(e){}
     }
     setLang(initial, false);
+  })();
+
+  // ---------- Native-submit fallback: detect ?submitted=true after redirect ----------
+  (function checkSubmitted(){
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('submitted') !== 'true') return;
+    const lang = params.get('lang') === 'ar' ? 'ar' : 'en';
+    // Hide both form wrappers and show the right confirmation
+    const enForm = document.getElementById('workshopForm');
+    const arForm = document.getElementById('workshopFormAr');
+    const enConfirm = document.getElementById('confirmBox');
+    const arConfirm = document.getElementById('confirmBoxAr');
+    if(enForm) enForm.style.display = 'none';
+    if(arForm) arForm.style.display = 'none';
+    if(lang === 'ar'){ if(arConfirm) arConfirm.classList.add('show'); }
+    else             { if(enConfirm) enConfirm.classList.add('show'); }
+    window.scrollTo({top:0, behavior:'smooth'});
   })();
 
   // ---------- Memories lightbox (shared single gallery) ----------
